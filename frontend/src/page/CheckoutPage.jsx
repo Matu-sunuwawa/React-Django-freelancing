@@ -16,11 +16,23 @@ const CheckoutPage = () => {
     const [user, setUser] = useState([]);
     const [carts, setCarts] = useState([]);
     const [customeraddress, setCustomerAddress] = useState([])
+    const [txRef, setTxRef] = useState('');
+    const [check, setCheck] = useState([]);
 
 
   useEffect(() => {
     getCheckout()
   }, [])
+
+  useEffect(() => {
+    if (carts && Array.isArray(carts)) {
+      if (carts.length > 0) {
+        setCheck(true)
+      } else if (carts.length == 0) {
+        setCheck(false)
+      }
+    }
+  }, [carts]);
 
   let getAuthorizationHeader = () => {
     const accessToken = localStorage.getItem('access_token')
@@ -39,6 +51,10 @@ const CheckoutPage = () => {
         setCarts(data.carts)
         setUser(data.user)
         setCustomerAddress(data.customeraddress)
+
+        const uniqueId = "negade-tx-" + Math.random().toString(16).slice(2);
+        setTxRef(uniqueId);
+        
     } catch (error) {
       console.log('Error fetching data', error)
     }
@@ -49,6 +65,11 @@ const CheckoutPage = () => {
     sum += items.get_total
   ))
 
+  let popup = async () => {
+    alert('Oops! Your cart is emptier than my bank account!')
+    window.location.href = 'http://localhost:3000/checkout/'
+  }
+
   return (
     <section className='container mx-auto py-10 lg:py-20'>
         <Link to='/cart' className='mt-[10px] p-1 text-black rounded-md bg-slate-100 hover:bg-slate-300'>Back</Link>
@@ -58,9 +79,9 @@ const CheckoutPage = () => {
                     <div>
                         <h3 className='text-xl font-semibold py-2'>Review Freelancers And Hiring</h3>
                     </div>
-                    {carts.map((cart, index) => (
+                    {check? carts.map((cart, index) => (
                         <CheckoutList key={index} cart={cart} />
-                    ))}
+                    )): <h3 className='text-center text-xl font-semibold text-[#dc2626] py-5'>Your cart is empty.</h3>}
                 </div>
                 <div className='bg-white shadow-lg px-4 py-6 rounded-md'>
                     <div className='flex justify-between py-6'>
@@ -107,7 +128,9 @@ const CheckoutPage = () => {
                 <div className='pb-2'>
                     <h3 className='text-xl font-semibold'>Order Summery</h3>
                     <div>
-                        <h3 className='text-xl font-semibold text-[#dc2626]'>Total Price: {sum}ETB</h3>
+                        {check? <h3 className='text-xl font-semibold text-[#dc2626]'>Total Price: {sum}ETB</h3>:
+                                <h3 className='text-center text-xl font-semibold text-[#dc2626] py-5'>Your cart is empty.</h3>
+                        }
                     </div>
                 </div>
                 <hr className='px-4' />
@@ -127,7 +150,23 @@ const CheckoutPage = () => {
                         <img className='' src={zemen} alt="zemen" />
                     </div>
                     <div className='py-4'>
-                        <button className='p-2 w-full text-black text-sm font-medium rounded-xl bg-slate-100 hover:bg-slate-300 font-semibold text-xl'>Pay</button>
+                        <form action='https://api.chapa.co/v1/hosted/pay' method='post'>
+                            <input type="hidden" name="public_key" value="CHAPUBK_TEST-hp9buUs7Diszv6NJ2RPM3vkaKxLxhTuY" />
+                            <input type="hidden" name="tx_ref" value={txRef} />
+                            <input type="hidden" name="amount" value={sum} />
+                            <input type="hidden" name="currency" value="ETB" />
+                            <input type="hidden" name="email" value={user.email} />
+                            <input type="hidden" name="first_name" value={user.name} />
+                            <input type="hidden" name="title" value="Let us do this" />
+                            <input type="hidden" name="description" value="Paying with Confidence with cha" />
+                            <input type="hidden" name="logo" value="https://chapa.link/asset/images/chapa_swirl.svg" />
+                            <input type="hidden" name="callback_url" value="http://127.0.0.1:8000/api/chapa-callback/" />
+                            <input type="hidden" name="return_url" value="http://localhost:3000/home/" />
+                            <input type="hidden" name="meta[title]" value="test" />
+                            {check? <button type='submit' className='p-2 w-full text-black text-sm font-medium rounded-xl bg-slate-100 hover:bg-slate-300 font-semibold text-xl'>Pay Now</button>:
+                                    <button type='button' className='p-2 w-full text-black text-sm font-medium rounded-xl bg-slate-100 hover:bg-slate-300 font-semibold text-xl' onClick={popup}>Pay Now</button>
+                            }
+                        </form>
                     </div>
                 </div>
             </div>

@@ -5,13 +5,22 @@ import { Link } from 'react-router-dom';
 const CartPage = () => {
 
   // const [data, setData] = useState([])
-  const [order, setOrder] = useState([]);
-  const [user, setUser] = useState([]);
   const [carts, setCarts] = useState([]);
+  const [check, setCheck] = useState(false);
 
   useEffect(() => {
     getCart()
   }, [])
+
+  useEffect(() => {
+    if (carts && Array.isArray(carts)) {
+      if (carts.length > 0) {
+        setCheck(true)
+      } else if (carts.length == 0) {
+        setCheck(false)
+      }
+    }
+  }, [carts]);  // The main purpose of this useEffect is to update the check state whenever the carts array changes. This ensures that the check state is always in sync with the actual length of the carts array.
 
   let getAuthorizationHeader = () => {
     const accessToken = localStorage.getItem('access_token')
@@ -26,9 +35,7 @@ const CartPage = () => {
         })
         let data = await response.json()
         console.log('cart:', data)
-        setOrder(data.order)
         setCarts(data.carts)
-        setUser(data.user)
     } catch (error) {
       console.log('Error fetching data', error)
     }
@@ -43,9 +50,9 @@ const CartPage = () => {
             <Link to='/home' className='mt-[10px] p-1 text-black rounded-md bg-slate-100 hover:bg-slate-300'>Back</Link>
             <Link to='/checkout' className='mt-[10px] p-1 text-black rounded-md bg-slate-100 hover:bg-slate-300'>Proceed to Checkout</Link>
         </div>
-        {carts.map((cart, index) => (
+        {check? carts.map((cart, index) => (
           <CartList key={index} cart={cart} />
-        ))}
+        )): <h3 className='text-center text-xl font-semibold text-[#dc2626]'>there is no product added in the cart.</h3>}
       </div>
     </div>
   )

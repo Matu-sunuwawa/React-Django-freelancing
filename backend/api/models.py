@@ -19,7 +19,8 @@ class Customer(models.Model):
 class ShoppingCart(models.Model):
     customer = models.OneToOneField(Customer, related_name='shoppingcart', on_delete=models.CASCADE)
     product_name = models.CharField(max_length=255)
-    quantity = models.IntegerField(default=0, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 
     def __str__(self):
@@ -34,7 +35,7 @@ class Product(models.Model):
         ('Msc', 'Msc level'),
         ('Phd', 'Phd level'),
     )
-    shoppingcart = models.ForeignKey(ShoppingCart, related_name='product', on_delete=models.CASCADE)
+    # shoppingcart = models.ForeignKey(ShoppingCart, related_name='product', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     image = models.ImageField(null=True, blank=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
@@ -147,3 +148,13 @@ class CustomerAddress(models.Model):
 
     def __str__(self):
         return str(self.phone_number)
+    
+class Shippingproducts(models.Model):
+    customer = models.OneToOneField(Customer, related_name='Shippingproducts', on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=255)
+    quantity = models.IntegerField(null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.product_name

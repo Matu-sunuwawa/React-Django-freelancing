@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status 
+from rest_framework.permissions import AllowAny
 
 from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer, CustomerSerializer, CustomerAddressSerializer
 from .models import Product, Order, Customer, OrderItem, CustomerAddress
@@ -49,7 +50,7 @@ class Home(APIView):
         ctx = {
             # 'cartprice': cart_items_serializer.data, #It is the same with 'carts': order_serializer.data['order_items'] on `cart` and checkout
             'products': serializer.data,
-            'cartitems': cart_total_serializer.data
+            'cartitems': cart_total_serializer.data,
         }
         return Response(ctx)
     
@@ -78,7 +79,6 @@ class Home(APIView):
         if orderItem.quantity <=0 :
             orderItem.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        
         return Response(status=status.HTTP_201_CREATED)
 
     
@@ -124,3 +124,52 @@ class CheckoutPage(APIView):
         }
 
         return Response(ctx)
+    
+
+class ChapaCallBack(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+            
+            try:
+                # Assuming Chapa sends JSON data in the query parameters
+                callback_data = request.query_params
+
+                # Process the callback_data here
+                # Example: Extract relevant information from callback_data
+                # tx_ref = callback_data.get('tx_ref')
+                # amount = callback_data.get('amount')
+                # callback_status = callback_data.get('status')
+
+                # You can update your database, send confirmation emails, etc. based on 'status'
+
+                # Log the callback data
+                print('chapa-callback:', callback_data)
+
+                callback_status = callback_data['status']
+                print('callback_status:', callback_status)
+
+
+                            
+                orderItem = OrderItem.objects.all()
+                if callback_status == 'success':
+                    orderItem.delete()
+                    # message = 'Cha-ching! Payment successful. You are officially poorer, but happier!'
+                    message = 'successful'
+                else:
+                    # message = 'Payment failed or pending, order not updated.'
+                    message = 'not successful'
+
+                return Response({'message': message})
+            except Exception as e:
+                print(e)
+                return Response({'message': 'Payment failed or pending, order not updated. ayyyy'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+#-----------------------------FETCHING DATA WHICH SENT TO BACKEND DJANGO---------------------
+# -callback_data = request.data   ==>Commonly used in Django Rest Framework (DRF) views.
+        #Description: This accesses the parsed data from the request body. It supports various content types like JSON, form data, etc.
+# -callback_data = json.loads(request.body)  ==>Standard Django views without DRF.
+# -callback_data = request.query_params  ==>Commonly used in Django Rest Framework (DRF) views.
+        #Description: This accesses the query parameters from the URL. It works similar to request.GET in standard Django.
