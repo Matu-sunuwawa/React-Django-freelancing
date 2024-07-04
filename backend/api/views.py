@@ -124,6 +124,28 @@ class CheckoutPage(APIView):
         }
 
         return Response(ctx)
+
+    def post(self, request, format=None):
+        data = request.data
+        print('data:', data)
+        customername = data['username']
+        customeremail = data['customemail']
+
+        customer = Customer.objects.get(name=customername, email=customeremail)
+
+        if (data['customeraddress'] != '' and data['customercity'] != '' and data['customerpcode']!='' and data['customerpnumber']!=''):
+            customerAddressInfo = CustomerAddress.objects.get_or_create(customer=customer)
+
+            customerAddress = CustomerAddress.objects.filter(customer=customer).update(
+                address=data['customeraddress'],
+                city=data['customercity'],
+                postal_code=data['customerpcode'],
+                phone_number=data['customerpnumber']
+            )
+        else:
+            print('it is empty')
+        return Response(status=status.HTTP_202_ACCEPTED)
+
     
 
 class ChapaCallBack(APIView):
