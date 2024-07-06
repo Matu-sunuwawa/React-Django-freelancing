@@ -154,7 +154,7 @@ class ChapaCallBack(APIView):
     def get(self, request, *args, **kwargs):
             
             try:
-                # Assuming Chapa sends JSON data in the query parameters
+                # Assuming Chapa sends JSON data in the query parameters and you should use it.
                 callback_data = request.query_params
 
                 # Process the callback_data here
