@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import CheckoutList from '../component/CheckoutList';
 import cbe from '../assets/cbe.webp'
@@ -9,6 +10,7 @@ import telebirr from '../assets/telebirr.webp'
 import awash from '../assets/awash.webp'
 import abs from '../assets/abs.webp'
 import zemen from '../assets/zemen.webp'
+import AuthContext from '../context/AuthContext';
 
 const CheckoutPage = () => {
 
@@ -19,6 +21,8 @@ const CheckoutPage = () => {
     const [txRef, setTxRef] = useState('');
     const [check, setCheck] = useState([]); //it should be false
     const [address, setAdress] = useState(false);
+
+    const {submitLogout} = useContext(AuthContext)
 
   let getAuthorizationHeader = () => {
     const accessToken = localStorage.getItem('access_token')
@@ -76,7 +80,7 @@ let customerAddressInfo = async () => {
       }
       window.location.reload()
   } catch {
-      submitLogout()
+      submitLogout
   }
 }
 
@@ -87,7 +91,8 @@ let customerAddressInfo = async () => {
 
   let popup = async () => {
     alert('Oops! Your cart is emptier than my bank account!')
-    window.location.href = 'http://localhost:3000/checkout/'
+    // window.location.href = 'http://localhost:3000/checkout/'
+    return <Navigate to="/checkout" />
   }
 
     let getAddress = () => {

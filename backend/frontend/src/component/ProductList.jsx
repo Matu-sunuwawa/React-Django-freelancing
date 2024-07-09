@@ -1,8 +1,10 @@
-import React from 'react'
+import {useContext} from 'react'
+import AuthContext from '../context/AuthContext'
 
 const ProductList = ({product}) => {
 
     console.log('productId:', product.id)
+    const {submitLogout} = useContext(AuthContext)
 
     let getAuthorizationHeader = () => {
         const accessToken = localStorage.getItem('access_token')
@@ -32,7 +34,7 @@ const ProductList = ({product}) => {
             }
             window.location.reload()
         } catch {
-            submitLogout()
+            submitLogout
         }
     }
 
